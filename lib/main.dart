@@ -21,6 +21,7 @@ Future<void> main() async {
         sessions: sessions,
         presets: presets,
         display: display,
+        localData: KeyValueLocalDataRepository(store),
         bootstrap: bootstrap,
       ),
       child: const BridgeScorekeeperApp(),

@@ -5,6 +5,14 @@ import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../storage/storage.dart';
 
+/// The bundled font of page titles, section titles, and other headings.
+const String headingFontFamily = 'Montserrat';
+
+/// The style of a key value in body text: bold, in the default font.
+TextStyle? valueStyle(BuildContext context) =>
+    Theme.of(context).textTheme.bodyLarge
+        ?.copyWith(fontWeight: FontWeight.w700);
+
 /// The green of a card table.
 const Color feltGreen = Color(0xFF1E6B45);
 
@@ -16,10 +24,21 @@ ThemeData buildTheme(Brightness brightness) {
   final base = ThemeData(colorScheme: scheme, useMaterial3: true).textTheme;
   // Headings and key values are bold, body text stays normal, so that the
   // important parts of each page stand out (design decision D4).
+  // Headings also use the heading font, so that they look different from
+  // normal text.
   final textTheme = base.copyWith(
-    headlineSmall: base.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-    titleLarge: base.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-    titleMedium: base.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+    headlineSmall: base.headlineSmall?.copyWith(
+      fontWeight: FontWeight.w700,
+      fontFamily: headingFontFamily,
+    ),
+    titleLarge: base.titleLarge?.copyWith(
+      fontWeight: FontWeight.w700,
+      fontFamily: headingFontFamily,
+    ),
+    titleMedium: base.titleMedium?.copyWith(
+      fontWeight: FontWeight.w700,
+      fontFamily: headingFontFamily,
+    ),
     titleSmall: base.titleSmall?.copyWith(fontWeight: FontWeight.w600),
     labelLarge: base.labelLarge?.copyWith(fontWeight: FontWeight.w600),
   );

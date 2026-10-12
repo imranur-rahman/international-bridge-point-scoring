@@ -245,6 +245,21 @@ class KeyValueDisplayPreferencesRepository
       store.write(StorageKeys.display, jsonEncode(preferences.toJson()));
 }
 
+/// Deletes all data of the app on this device: sessions, past sessions,
+/// House rules, the last preset, and the display settings.
+abstract interface class LocalDataRepository {
+  Future<void> deleteAll();
+}
+
+class KeyValueLocalDataRepository implements LocalDataRepository {
+  KeyValueLocalDataRepository(this.store);
+
+  final KeyValueStore store;
+
+  @override
+  Future<void> deleteAll() => store.clear();
+}
+
 /// In-memory repositories, for tests.
 class InMemorySessionRepository extends KeyValueSessionRepository {
   InMemorySessionRepository() : super(MemoryKeyValueStore());

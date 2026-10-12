@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auction/auction.dart';
 import '../../../core/core.dart';
 import '../../../session/session.dart';
+import '../theme.dart';
 import '../widgets.dart';
 import 'deal_screen.dart';
 
@@ -27,7 +28,7 @@ class AuctionView extends ConsumerWidget {
         Text(
           auctionStatus(auction, players),
           key: const Key('auction-status'),
-          style: Theme.of(context).textTheme.titleMedium,
+          style: valueStyle(context),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),

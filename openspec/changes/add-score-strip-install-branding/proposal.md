@@ -8,6 +8,7 @@ On a phone, the deal screen shows no score: players must open the score sheet to
 - The scored stage says who deals next, and has an "Undo deal" action next to "Next deal".
 - An "Install IB Scoring" action on the home screen: the system install prompt where the browser offers one (Chrome, Edge, Android), and a short guide on iPhone and iPad. The action hides when the app runs installed.
 - The app name changes from "IB Score" to "IB Scoring" on all platforms. The home heading becomes "International Bridge Scoring", and the descriptions no longer say "rubber bridge". The scoring terms (rubber, rubber bonus, unfinished rubber) do not change.
+- A "Storage" section in Settings: "Refresh app files" clears the offline copy of the web app and reloads it (scores stay), and "Delete all data" removes all sessions, House rules, and settings after a strong confirmation.
 - Headings (page titles, section titles, the contract headline, and the final summary winner line) use the Montserrat font, bundled with the app; normal text stays Roboto.
 
 ## Capabilities
@@ -16,7 +17,7 @@ On a phone, the deal screen shows no score: players must open the score sheet to
 <!-- None. -->
 
 ### Modified Capabilities
-- `app-shell`: The app name changes to "IB Scoring"; adds the install action, the home heading text, and the heading font.
+- `app-shell`: The app name changes to "IB Scoring"; adds the install action, the home heading text, the heading font, and the actions that clear the offline copy and all local data.
 - `deal-lifecycle`: Adds the score strip and the scored-stage actions (next dealer, undo).
 
 ## Impact

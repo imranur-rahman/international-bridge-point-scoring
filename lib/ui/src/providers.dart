@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../scoring/scoring.dart';
 import '../../session/session.dart';
 import '../../storage/storage.dart';
+import 'install/app_files.dart';
+import 'install/install_prompt.dart';
 
 /// The data that the app loads before the first frame.
 class AppBootstrap {
@@ -38,6 +40,9 @@ final presetRepositoryProvider = Provider<PresetRepository>(
 );
 final displayRepositoryProvider = Provider<DisplayPreferencesRepository>(
   (ref) => throw UnimplementedError('Override displayRepositoryProvider'),
+);
+final localDataRepositoryProvider = Provider<LocalDataRepository>(
+  (ref) => throw UnimplementedError('Override localDataRepositoryProvider'),
 );
 final bootstrapProvider = Provider<AppBootstrap>(
   (ref) => throw UnimplementedError('Override bootstrapProvider'),
@@ -80,6 +85,9 @@ class SessionNotifier extends Notifier<SessionState?> {
     await ref.read(lastPresetProvider.notifier).set(settings.preset);
   }
 
+  /// Forgets the active session after all data was deleted.
+  void forget() => state = null;
+
   /// Ends the active session if needed and moves it to the past sessions.
   Future<void> archiveActive() async {
     final current = state;
@@ -113,6 +121,8 @@ class HouseRulesNotifier extends Notifier<ScoringValues> {
   @override
   ScoringValues build() => ref.read(bootstrapProvider).houseRules;
 
+  void reset() => state = ScoringValues.houseDefaults();
+
   Future<void> save(ScoringValues values) async {
     state = values;
     await ref.read(presetRepositoryProvider).saveHouseRules(values);
@@ -128,6 +138,8 @@ class LastPresetNotifier extends Notifier<ScoringPreset> {
   @override
   ScoringPreset build() => ref.read(bootstrapProvider).lastPreset;
 
+  void reset() => state = ScoringPreset.standard;
+
   Future<void> set(ScoringPreset preset) async {
     state = preset;
     await ref.read(presetRepositoryProvider).saveLastPreset(preset);
@@ -142,6 +154,8 @@ final lastPresetProvider = NotifierProvider<LastPresetNotifier, ScoringPreset>(
 class DisplayNotifier extends Notifier<DisplayPreferences> {
   @override
   DisplayPreferences build() => ref.read(bootstrapProvider).display;
+
+  void reset() => state = const DisplayPreferences();
 
   Future<void> update(DisplayPreferences preferences) async {
     state = preferences;
@@ -160,3 +174,22 @@ final pastSessionsProvider = FutureProvider<List<PastSessionEntry>>(
 /// Values of a preset: "Standard" or the saved "House rules".
 ScoringValues valuesOf(ScoringPreset preset, ScoringValues houseRules) =>
     preset == ScoringPreset.standard ? ScoringValues.standard() : houseRules;
+
+/// The install prompt of this platform. Tests override it with a fake.
+final installPromptProvider = Provider<InstallPrompt>(
+  (ref) => createInstallPrompt(),
+);
+
+/// The offline copy of the web app. Tests override it with a fake.
+final appFilesProvider = Provider<AppFiles>((ref) => createAppFiles());
+
+/// Deletes all data of the app on this device and resets the app state to
+/// the defaults (design decision D5).
+Future<void> resetAllData(WidgetRef ref) async {
+  await ref.read(localDataRepositoryProvider).deleteAll();
+  ref.read(sessionProvider.notifier).forget();
+  ref.read(houseRulesProvider.notifier).reset();
+  ref.read(lastPresetProvider.notifier).reset();
+  ref.read(displayProvider.notifier).reset();
+  ref.invalidate(pastSessionsProvider);
+}

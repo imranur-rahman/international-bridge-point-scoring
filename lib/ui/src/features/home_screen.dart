@@ -1,23 +1,89 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/core.dart';
+import '../install/install_prompt.dart';
 import '../providers.dart';
 import '../widgets.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  InstallState install = InstallState.none;
+  Timer? _poll;
+
+  @override
+  void initState() {
+    super.initState();
+    _check();
+    // The browser can offer its install prompt after the first frame, so
+    // check again every 2 seconds, for up to 10 seconds.
+    var ticks = 0;
+    _poll = Timer.periodic(const Duration(seconds: 2), (timer) {
+      ticks++;
+      _check();
+      if (install != InstallState.none || ticks >= 5) timer.cancel();
+    });
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
+  }
+
+  void _check() {
+    final state = ref.read(installPromptProvider).state();
+    if (state != install && mounted) setState(() => install = state);
+  }
+
+  Future<void> _install() async {
+    if (install == InstallState.ios) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          key: const Key('ios-install-guide'),
+          title: const Text('Install IB Scoring'),
+          content: const Text(
+            'Tap Share, then Add to Home Screen. The app then opens from '
+            'your home screen and works offline.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    try {
+      await ref.read(installPromptProvider).install();
+    } on Object {
+      // The browser can refuse the prompt, for example without a user tap.
+    } finally {
+      _check();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final session = ref.watch(sessionProvider);
     final ledger = ref.watch(ledgerProvider);
     final text = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('IB Score'),
+        title: const Text('IB Scoring'),
         actions: [
           IconButton(
             tooltip: 'Settings',
@@ -28,7 +94,11 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: ScrollPage(
         children: [
-          Text('Rubber bridge scoring', style: text.headlineSmall),
+          Text(
+            'International Bridge Scoring',
+            key: const Key('home-heading'),
+            style: text.headlineSmall,
+          ),
           const SizedBox(height: 4),
           Text(
             'Keep the score of each deal by the rules.',
@@ -84,6 +154,16 @@ class HomeScreen extends ConsumerWidget {
             label: const Text('Past sessions'),
             onPressed: () => context.push('/past'),
           ),
+          if (install == InstallState.prompt ||
+              install == InstallState.ios) ...[
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              key: const Key('install'),
+              icon: const Icon(Icons.install_mobile),
+              label: const Text('Install IB Scoring'),
+              onPressed: _install,
+            ),
+          ],
           if (kIsWeb) ...[
             const SizedBox(height: 24),
             Text(

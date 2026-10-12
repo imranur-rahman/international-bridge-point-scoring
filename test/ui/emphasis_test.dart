@@ -39,6 +39,12 @@ void main() {
     }
     // Body text stays at normal weight.
     expect(weight(drawnStyle(tester, find.text('Number of deals'))), 400);
+    // Headings use the heading font; normal text keeps the default font.
+    expect(drawnStyle(tester, find.text('End rule')).fontFamily, 'Montserrat');
+    expect(
+      drawnStyle(tester, find.text('Number of deals')).fontFamily,
+      isNot('Montserrat'),
+    );
   });
 
   testWidgets('score sheet: totals bold, rubber rows normal', (tester) async {

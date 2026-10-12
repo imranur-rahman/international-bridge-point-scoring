@@ -5,6 +5,7 @@ import '../../../core/core.dart';
 import '../../../scoring/scoring.dart';
 import '../../../session/session.dart';
 import '../providers.dart';
+import '../theme.dart';
 import '../widgets.dart';
 import 'deal_screen.dart';
 
@@ -170,7 +171,7 @@ class _QuickEntryViewState extends ConsumerState<QuickEntryView> {
           Text(
             r?.fullResult ?? 'Select the result',
             key: const Key('quick-full-result'),
-            style: text.titleMedium?.copyWith(
+            style: valueStyle(context)?.copyWith(
               color: r == null
                   ? null
                   : ResultColors.of(

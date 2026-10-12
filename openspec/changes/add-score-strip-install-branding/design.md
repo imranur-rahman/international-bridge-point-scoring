@@ -43,7 +43,15 @@ Alternative: a package for PWA install prompts. It adds a dependency for two sma
 - The theme sets `fontFamily: 'Montserrat'` on `headlineSmall`, `titleLarge`, and `titleMedium`, which the page titles, the section titles, the contract headline, and the winner line already use. Suit symbols keep their own font through `SuitText`.
 - A test checks that both font files are smaller than 40 KB.
 
+### D5. Storage actions
+
+- **Offline copy (web):** `web/index.html` defines `ibOfflineSize()` (sums the sizes of the responses in the caches whose names start with `ib-score-`) and `ibRefreshAppFiles()` (deletes those caches, unregisters the service workers of the app, and reloads the page). An `AppFiles` interface in `ui/src/install/` with a web version and a stub (the same conditional import as `InstallPrompt`) calls them; the stub reports no offline copy, so phone builds hide the action.
+- **All data:** `KeyValueStore` gets `clear()` (`SharedPreferences.clear()` removes only the keys of this app). A `LocalDataRepository` in `storage` with `deleteAll()` calls it. A `resetAllData` function in the UI providers calls `deleteAll()`, then resets the session, House rules, last preset, and display notifiers to their defaults and reloads the past sessions list, and the app goes to the home screen.
+- **Strong confirmation:** a dialog with a text field; "Delete" is enabled only when the field holds "delete" (any letter case, with spaces removed at the ends).
+
 ## Risks / Trade-offs
+
+- [A user deletes all data by mistake] → The typed word and the text "This cannot be undone" make an accidental deletion unlikely. A backup feature is a separate change.
 
 - [The browser does not offer an install prompt (for example, the user dismissed it before)] → The action then does not show; the browser menu still has "Install" or "Add to Home Screen".
 - [Montserrat headings take more width than Roboto] → The layout tests at 360 px with each text size cover all main screens.

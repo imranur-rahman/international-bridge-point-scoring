@@ -1,11 +1,11 @@
 {
-    "name": "IB Score",
-    "short_name": "IB Score",
+    "name": "IB Scoring",
+    "short_name": "IB Scoring",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#1E6B45",
     "theme_color": "#1E6B45",
-    "description": "Keep the score of rubber bridge deals by the rules.",
+    "description": "Keep the score of each bridge deal by the rules.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

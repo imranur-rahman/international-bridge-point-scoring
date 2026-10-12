@@ -358,4 +358,36 @@ void main() {
     await h.tapKey('holding-threeHonors');
     expect(h.session!.draft!.honors!.side, Side.eastWest);
   });
+
+  testWidgets('scored stage shows the next dealer', (tester) async {
+    final s = playDeal(newSession(), '2S', Seat.south, next: false);
+    await atDeal(tester, s);
+    expect(find.text('Next deal: Bob (East) deals'), findsOneWidget);
+  });
+
+  testWidgets('undo from the scored stage', (tester) async {
+    var s = playDeal(newSession(), '4S', Seat.south);
+    s = playDeal(s, '2S', Seat.east, next: false);
+    final h = await atDeal(tester, s);
+    expect(h.session!.ledger.totalFor(Side.eastWest), 60);
+    await h.tapKey('undo-scored-deal');
+    await h.tap(find.text('Undo deal').last);
+    expect(h.session!.records, hasLength(1));
+    expect(h.session!.ledger.totalFor(Side.eastWest), 0);
+    expect(h.session!.draft!.stage, DealStage.start);
+    expect(find.text('Dealer: Bob (East)'), findsOneWidget);
+  });
+
+  testWidgets('no next dealer when the session has ended', (tester) async {
+    final s = playDeal(
+      newSession(settings(endRule: const DealCountRule(1))),
+      '2S',
+      Seat.south,
+      next: false,
+    );
+    expect(s.isEnded, isTrue);
+    await atDeal(tester, s);
+    expect(find.byKey(const Key('next-dealer')), findsNothing);
+    expect(find.byKey(const Key('final-summary')), findsOneWidget);
+  });
 }

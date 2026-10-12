@@ -14,7 +14,7 @@ class BridgeScorekeeperApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final display = ref.watch(displayProvider);
     return MaterialApp.router(
-      title: 'IB Score',
+      title: 'IB Scoring',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
@@ -51,10 +51,12 @@ List<Override> appOverrides({
   required SessionRepository sessions,
   required PresetRepository presets,
   required DisplayPreferencesRepository display,
+  required LocalDataRepository localData,
   required AppBootstrap bootstrap,
 }) => [
   sessionRepositoryProvider.overrideWithValue(sessions),
   presetRepositoryProvider.overrideWithValue(presets),
   displayRepositoryProvider.overrideWithValue(display),
+  localDataRepositoryProvider.overrideWithValue(localData),
   bootstrapProvider.overrideWithValue(bootstrap),
 ];

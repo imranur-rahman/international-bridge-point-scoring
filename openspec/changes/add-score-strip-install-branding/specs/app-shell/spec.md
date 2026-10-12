@@ -43,3 +43,27 @@ Page titles, section titles, the contract headline, and the winner line of the f
 #### Scenario: Section title font
 - **WHEN** the user opens the setup step "Game rules"
 - **THEN** the section title "End rule" uses Montserrat, and the text "Number of deals" uses the default font
+
+### Requirement: Clear the offline copy and the local data
+The Settings screen SHALL have a "Storage" section with these actions:
+- **Refresh app files** (web app only): shows the size of the offline copy of the app, and after a confirmation deletes the offline copy, removes the service worker, and reloads the app from the network. Sessions, past sessions, House rules, and settings SHALL stay.
+- **Delete all data**: deletes all sessions, past sessions, House rules, the last preset, and the display settings on this device. Before the deletion, the system SHALL ask for a strong confirmation: the user types "delete" to enable the action. After the deletion, the app SHALL show the home screen with no session, the House rules defaults, and the default display settings.
+
+On Android and iOS builds, which have no offline copy, the section SHALL show only "Delete all data".
+
+#### Scenario: Refresh app files
+- **WHEN** the user selects "Refresh app files" in the web app and confirms
+- **THEN** the system deletes the offline copy, reloads the app from the network, and the active session is still there
+
+#### Scenario: Delete all data needs the typed word
+- **WHEN** the user selects "Delete all data"
+- **THEN** the delete action stays disabled until the user types "delete"
+
+#### Scenario: Delete all data
+- **WHEN** the user types "delete" and confirms
+- **THEN** the system removes all sessions, past sessions, House rules, and settings, and shows the home screen with no "Continue session"
+
+#### Scenario: Phone build
+- **WHEN** the app runs as an Android or iOS build
+- **THEN** the Storage section shows "Delete all data" and no "Refresh app files"
+
