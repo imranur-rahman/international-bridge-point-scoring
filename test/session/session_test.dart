@@ -532,4 +532,128 @@ void main() {
     expect(copy.draft!.auction!.calls, [Call.pass]);
     expect(copy.records[0].original!.result!.tricksTaken, 10);
   });
+
+  group('Quick entry deals', () {
+    SessionSettings quick({EndRule endRule = const DealCountRule(16)}) =>
+        settings(endRule: endRule).copyWithQuickEntry(true);
+    DealResult r(String code, Seat declarer, {int diff = 0}) {
+      final c = contract(code, declarer).toContract()!;
+      return DealResult(contract: c, tricksTaken: c.tricksNeeded + diff);
+    }
+
+    test('each deal starts at the entry stage', () {
+      final s = newSession(quick());
+      expect(s.draft!.stage, DealStage.entry);
+      expect(
+        () => run(s, [const AdvanceFromStart()]),
+        throwsA(isA<InvalidCommandException>()),
+      );
+    });
+
+    test('a quick deal records the same as the full stages', () {
+      final quickState = run(newSession(quick()), [
+        RecordQuickDeal(r('4SX', Seat.south, diff: -2)),
+      ]);
+      final full = playDeal(
+        newSession(),
+        '4SX',
+        Seat.south,
+        diff: -2,
+        next: false,
+      );
+      expect(quickState.records.single.result, full.records.single.result);
+      expect(
+        quickState.ledger.totalFor(Side.eastWest),
+        full.ledger.totalFor(Side.eastWest),
+      );
+      expect(quickState.draft!.stage, DealStage.scored);
+      final next = run(quickState, [const NextDeal()]);
+      expect(next.draft!.stage, DealStage.entry);
+      expect(next.draft!.dealer, Seat.east);
+    });
+
+    test('a passed-out quick deal', () {
+      final s = run(newSession(quick()), [const RecordQuickDeal(null)]);
+      expect(s.records.single.isPassedOut, isTrue);
+      expect(s.draft!.stage, DealStage.entry);
+      expect(s.draft!.dealer, Seat.east);
+    });
+
+    test('the end rule still applies', () {
+      var s = newSession(quick(endRule: const DealCountRule(2)));
+      s = run(s, [RecordQuickDeal(r('1C', Seat.north)), const NextDeal()]);
+      s = run(s, [RecordQuickDeal(r('1C', Seat.east))]);
+      expect(s.isEnded, isTrue);
+      expect(s.endReason, EndReason.endRule);
+    });
+
+    test('undo returns to the entry stage', () {
+      var s = run(newSession(quick()), [
+        RecordQuickDeal(r('1C', Seat.north)),
+        const NextDeal(),
+        const UndoLastDeal(),
+      ]);
+      expect(s.records, isEmpty);
+      expect(s.draft!.stage, DealStage.entry);
+      expect(s.draft!.dealer, Seat.north);
+      s = run(s, [const EndSession()]);
+      expect(s.isEnded, isTrue);
+    });
+
+    test('honors are needed when honors are on', () {
+      final s = newSession(
+        SessionSettings(
+          players: players,
+          firstDealer: Seat.north,
+          endRule: const DealCountRule(16),
+          biddingStep: false,
+          components: const ScoringComponents(),
+          preset: ScoringPreset.standard,
+          values: ScoringValues.standard(),
+          quickEntry: true,
+        ),
+      );
+      expect(
+        () => run(s, [RecordQuickDeal(r('4H', Seat.south))]),
+        throwsA(isA<InvalidCommandException>()),
+      );
+    });
+
+    test('quick entry has no effect with the bidding step on', () {
+      final s = newSession(settings(bidding: true).copyWithQuickEntry(true));
+      expect(s.draft!.stage, DealStage.start);
+    });
+  });
+
+  group('Quick entry setting', () {
+    test('JSON round trip', () {
+      final s = settings().copyWithQuickEntry(true);
+      expect(SessionSettings.fromJson(s.toJson()).quickEntry, isTrue);
+      expect(SessionSettings.fromJson(settings().toJson()).quickEntry, isFalse);
+    });
+
+    test('an older stored session reads as quick entry off', () {
+      final json = settings().toJson()..remove('quickEntry');
+      expect(SessionSettings.fromJson(json).quickEntry, isFalse);
+    });
+
+    test('new session with the same players keeps quick entry', () {
+      var s = newSession(settings().copyWithQuickEntry(true));
+      s = run(s, [const EndSession()]);
+      expect(rematchSettings(s).quickEntry, isTrue);
+    });
+  });
+}
+
+extension on SessionSettings {
+  SessionSettings copyWithQuickEntry(bool value) => SessionSettings(
+    players: players,
+    firstDealer: firstDealer,
+    endRule: endRule,
+    biddingStep: biddingStep,
+    components: components,
+    preset: preset,
+    values: values,
+    quickEntry: value,
+  );
 }

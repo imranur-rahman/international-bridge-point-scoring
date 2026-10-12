@@ -47,6 +47,7 @@ class _SetupWizardState extends ConsumerState<SetupWizard> {
   final TextEditingController target = TextEditingController(text: '3000');
   String? endRuleError;
   bool biddingStep = false;
+  bool quickEntry = false;
   bool honors = true;
   bool unfinishedBonus = true;
 
@@ -71,6 +72,7 @@ class _SetupWizardState extends ConsumerState<SetupWizard> {
           target.text = '$points';
       }
       biddingStep = prefill.biddingStep;
+      quickEntry = prefill.quickEntry && !prefill.biddingStep;
       honors = prefill.components.honors;
       unfinishedBonus = prefill.components.unfinishedRubberBonus;
       preset = prefill.preset;
@@ -134,6 +136,7 @@ class _SetupWizardState extends ConsumerState<SetupWizard> {
       ),
       preset: preset,
       values: valuesOf(preset, ref.read(houseRulesProvider)),
+      quickEntry: quickEntry && !biddingStep,
     );
     await ref.read(sessionProvider.notifier).start(settings);
     ref.read(setupPrefillProvider.notifier).set(null);
@@ -299,7 +302,23 @@ class _SetupWizardState extends ConsumerState<SetupWizard> {
       title: const Text('Bidding step'),
       subtitle: const Text('Record the calls of each auction'),
       value: biddingStep,
-      onChanged: (v) => setState(() => biddingStep = v),
+      onChanged: (v) => setState(() {
+        biddingStep = v;
+        // The auction sets the contract, so quick entry needs no bidding.
+        if (v) quickEntry = false;
+      }),
+    ),
+    SwitchListTile(
+      key: const Key('quick-entry'),
+      contentPadding: EdgeInsets.zero,
+      title: const Text('Quick entry'),
+      subtitle: Text(
+        biddingStep
+            ? 'Only without the bidding step'
+            : 'One screen for contract, result, and honors',
+      ),
+      value: quickEntry,
+      onChanged: biddingStep ? null : (v) => setState(() => quickEntry = v),
     ),
     SwitchListTile(
       key: const Key('honors'),

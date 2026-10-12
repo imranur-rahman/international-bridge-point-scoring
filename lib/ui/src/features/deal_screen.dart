@@ -9,6 +9,7 @@ import '../../../session/session.dart';
 import '../providers.dart';
 import '../widgets.dart';
 import 'auction_view.dart';
+import 'quick_entry_view.dart';
 import 'score_sheet.dart';
 
 /// The width from which the deal and the score sheet show side by side.
@@ -97,6 +98,7 @@ class _DealMenu extends ConsumerWidget {
         !session.isEnded &&
         (stage == null ||
             stage == DealStage.start ||
+            stage == DealStage.entry ||
             stage == DealStage.scored);
     return PopupMenuButton<_MenuAction>(
       key: const Key('deal-menu'),
@@ -192,6 +194,7 @@ class SessionSettingsDialog extends StatelessWidget {
             Text('First dealer: ${p.nameOf(settings.firstDealer)}'),
             Text('End rule: $rule'),
             Text('Bidding step: ${onOff(settings.biddingStep)}'),
+            Text('Quick entry: ${onOff(settings.quickEntry)}'),
             Text('Honors: ${onOff(settings.components.honors)}'),
             Text(
               'Unfinished rubber bonus: '
@@ -233,10 +236,16 @@ class _DealPane extends ConsumerWidget {
     }
     return ScrollPage(
       children: [
-        StageBar(stage: draft.stage, biddingStep: session.settings.biddingStep),
+        StageBar(
+          stage: draft.stage,
+          biddingStep: session.settings.biddingStep,
+          quickEntry:
+              SessionController.firstStage(session.settings) == DealStage.entry,
+        ),
         const SizedBox(height: 16),
         switch (draft.stage) {
           DealStage.start => _StartView(session: session, draft: draft),
+          DealStage.entry => QuickEntryView(session: session, draft: draft),
           DealStage.auction => AuctionView(session: session, draft: draft),
           DealStage.contract => _ContractView(session: session, draft: draft),
           DealStage.play => _PlayView(session: session, draft: draft),
@@ -250,18 +259,28 @@ class _DealPane extends ConsumerWidget {
 
 /// Shows all stages of a deal and marks the current stage.
 class StageBar extends StatelessWidget {
-  const StageBar({super.key, required this.stage, required this.biddingStep});
+  const StageBar({
+    super.key,
+    required this.stage,
+    required this.biddingStep,
+    this.quickEntry = false,
+  });
 
   final DealStage stage;
   final bool biddingStep;
+  final bool quickEntry;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final stages = [
-      for (final s in DealStage.values)
-        if (s != DealStage.auction || biddingStep) s,
-    ];
+    final stages = quickEntry
+        ? const [DealStage.entry, DealStage.scored]
+        : [
+            for (final s in DealStage.values)
+              if (s != DealStage.entry &&
+                  (s != DealStage.auction || biddingStep))
+                s,
+          ];
     return Wrap(
       key: const Key('stage-bar'),
       spacing: 6,
@@ -640,7 +659,15 @@ class _ResultViewState extends ConsumerState<_ResultView> {
         Text(
           result?.fullResult ?? 'Select the result',
           key: const Key('full-result'),
-          style: Theme.of(context).textTheme.titleMedium,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: result == null
+                ? null
+                : ResultColors.of(
+                    Theme.of(context).colorScheme,
+                    result.difference,
+                  ).selected,
+          ),
         ),
         if (session.settings.components.honors) ...[
           const SectionTitle('Honors'),
@@ -678,9 +705,41 @@ class _ResultViewState extends ConsumerState<_ResultView> {
   }
 }
 
-/// One button for each possible result. On a narrow screen, "−3" to "+3"
-/// show first, and the other results are in a row that scrolls
-/// sideways.
+/// The colors of a result group: undertricks, made, or overtricks.
+class ResultColors {
+  const ResultColors(this.cell, this.onCell, this.selected, this.onSelected);
+
+  final Color cell;
+  final Color onCell;
+  final Color selected;
+  final Color onSelected;
+
+  /// The colors for a result [difference]: negative for undertricks, 0 for
+  /// made, positive for overtricks.
+  factory ResultColors.of(ColorScheme scheme, int difference) => difference < 0
+      ? ResultColors(
+          scheme.errorContainer,
+          scheme.onErrorContainer,
+          scheme.error,
+          scheme.onError,
+        )
+      : difference == 0
+      ? ResultColors(
+          scheme.primaryContainer,
+          scheme.onPrimaryContainer,
+          scheme.primary,
+          scheme.onPrimary,
+        )
+      : ResultColors(
+          scheme.tertiaryContainer,
+          scheme.onTertiaryContainer,
+          scheme.tertiary,
+          scheme.onTertiary,
+        );
+}
+
+/// One button for each of the 14 possible results, in an even grid of 2
+/// rows × 7 equal cells, colored by group.
 class ResultPicker extends StatelessWidget {
   const ResultPicker({
     super.key,
@@ -693,59 +752,75 @@ class ResultPicker extends StatelessWidget {
   final int? selected;
   final ValueChanged<int> onSelected;
 
-  static const double gap = 8;
+  static const int columns = 7;
+  static const double gap = 6;
+  static const double cellHeight = 48;
 
   @override
   Widget build(BuildContext context) {
     final options = ResultOption.forLevel(level);
-    Widget button(ResultOption o) => ChoiceChip(
-      key: Key('result-${o.label}'),
-      label: Text(o.label, maxLines: 1),
-      selected: o.tricksTaken == selected,
-      onSelected: (_) => onSelected(o.tricksTaken),
-    );
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth >= 560) {
-          return Wrap(
-            spacing: gap,
-            runSpacing: gap,
-            children: [for (final o in options) button(o)],
-          );
-        }
-        final main = options.where((o) => o.difference >= -3).toList();
-        // The other results, nearest first: −4, −5, ...
-        final more = options
-            .where((o) => o.difference < -3)
-            .toList()
-            .reversed
-            .toList();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Wrap(
-              key: const Key('result-main'),
-              spacing: gap,
-              runSpacing: gap,
-              children: [for (final o in main) button(o)],
-            ),
-            if (more.isNotEmpty) ...[
-              const SizedBox(height: gap),
-              SizedBox(
-                height: 52 * MediaQuery.textScalerOf(context).scale(1),
-                child: ListView.separated(
-                  key: const Key('result-scroll'),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: more.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: gap),
-                  itemBuilder: (_, i) => Center(child: button(more[i])),
+    final scheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    Widget cell(ResultOption o) {
+      final isSelected = o.tricksTaken == selected;
+      final colors = ResultColors.of(scheme, o.difference);
+      return Expanded(
+        child: Semantics(
+          button: true,
+          selected: isSelected,
+          label: o.label,
+          child: Material(
+            key: Key('result-${o.label}'),
+            color: isSelected ? colors.selected : colors.cell,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () => onSelected(o.tricksTaken),
+              child: SizedBox(
+                height: cellHeight * (textScale > 1 ? textScale : 1),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        o.label,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontWeight: isSelected || o.difference == 0
+                              ? FontWeight.w700
+                              : FontWeight.w600,
+                          color: isSelected ? colors.onSelected : colors.onCell,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ],
-          ],
-        );
-      },
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget row(List<ResultOption> items) => Row(
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          if (i > 0) const SizedBox(width: gap),
+          cell(items[i]),
+        ],
+      ],
+    );
+
+    return Column(
+      key: const Key('result-grid'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var r = 0; r < options.length; r += columns) ...[
+          if (r > 0) const SizedBox(height: gap),
+          row(options.sublist(r, (r + columns).clamp(0, options.length))),
+        ],
+      ],
     );
   }
 }
@@ -780,6 +855,67 @@ class _HonorsPickerState extends State<HonorsPicker> {
     final holdings = HonorsHolding.forStrain(widget.strain);
     final current = widget.honors;
     final isNone = current?.holding.isNone ?? false;
+    final scheme = Theme.of(context).colorScheme;
+
+    Widget holdingCell(HonorsHolding h) {
+      final selected = current?.holding == h;
+      final enabled = h.isNone || side != null;
+      final fg = selected ? scheme.onPrimary : scheme.onSurface;
+      return Expanded(
+        child: Semantics(
+          button: true,
+          selected: selected,
+          enabled: enabled,
+          child: Material(
+            key: Key('holding-${h.name}'),
+            color: selected ? scheme.primary : scheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: enabled
+                  ? () => widget.onChanged(
+                      h.isNone ? Honors.none : Honors(h, side),
+                    )
+                  : null,
+              child: Opacity(
+                opacity: enabled ? 1 : 0.45,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            h.label,
+                            style: TextStyle(
+                              color: fg,
+                              fontWeight: selected ? FontWeight.w700 : null,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${h.points(widget.values)}',
+                          style: TextStyle(
+                            color: fg,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -789,41 +925,48 @@ class _HonorsPickerState extends State<HonorsPicker> {
               : 'Which side held 3 or more aces?',
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
+        SegmentedButton<Side>(
+          key: const Key('honors-side'),
+          expandedInsets: EdgeInsets.zero,
+          emptySelectionAllowed: true,
+          showSelectedIcon: false,
+          segments: [
             for (final s in Side.values)
-              ChoiceChip(
-                key: Key('honors-side-${s.name}'),
-                label: Text(widget.players.partnershipName(s)),
-                selected: side == s && !isNone,
-                onSelected: (_) {
-                  setState(() => side = s);
-                  final h = current?.holding;
-                  if (h != null && !h.isNone) widget.onChanged(Honors(h, s));
-                },
+              ButtonSegment(
+                value: s,
+                label: Text(
+                  widget.players.partnershipName(s),
+                  key: Key('honors-side-${s.name}'),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
           ],
+          selected: {if (side != null && !isNone) side!},
+          onSelectionChanged: (selection) {
+            if (selection.isEmpty) return;
+            final s = selection.first;
+            setState(() => side = s);
+            final h = current?.holding;
+            if (h != null && !h.isNone) widget.onChanged(Honors(h, s));
+          },
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final h in holdings)
-              ChoiceChip(
-                key: Key('holding-${h.name}'),
-                label: Text('${h.label} · ${h.points(widget.values)}'),
-                selected: current?.holding == h,
-                onSelected: (h.isNone || side != null)
-                    ? (_) => widget.onChanged(
-                        h.isNone ? Honors.none : Honors(h, side),
-                      )
-                    : null,
-              ),
-          ],
-        ),
+        for (var i = 0; i < holdings.length; i += 2) ...[
+          if (i > 0) const SizedBox(height: 6),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                holdingCell(holdings[i]),
+                const SizedBox(width: 6),
+                if (i + 1 < holdings.length)
+                  holdingCell(holdings[i + 1])
+                else
+                  const Expanded(child: SizedBox.shrink()),
+              ],
+            ),
+          ),
+        ],
         if (side == null && !isNone)
           Padding(
             padding: const EdgeInsets.only(top: 4),

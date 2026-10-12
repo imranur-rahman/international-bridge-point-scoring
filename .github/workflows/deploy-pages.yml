@@ -40,6 +40,12 @@ jobs:
         # GitHub Pages serves the app under /<repository name>/.
         run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
 
+      - name: Set the service worker version
+        # Each deployment gets its own offline cache (see web/sw.js).
+        run: |
+          sed -i "s/^const BUILD_ID = 'dev';/const BUILD_ID = '${{ github.sha }}';/" build/web/sw.js
+          grep -q "const BUILD_ID = '${{ github.sha }}';" build/web/sw.js
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

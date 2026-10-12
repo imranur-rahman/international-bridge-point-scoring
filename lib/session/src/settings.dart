@@ -13,6 +13,7 @@ class SessionSettings {
     required this.components,
     required this.preset,
     required this.values,
+    this.quickEntry = false,
   });
 
   final Players players;
@@ -26,6 +27,10 @@ class SessionSettings {
   /// "House rules" does not change it.
   final ScoringValues values;
 
+  /// One screen for contract, result, and honors. Only with the bidding
+  /// step off.
+  final bool quickEntry;
+
   Map<String, Object?> toJson() => {
     'players': players.toJson(),
     'firstDealer': firstDealer.toJson(),
@@ -34,6 +39,7 @@ class SessionSettings {
     'components': components.toJson(),
     'preset': preset.toJson(),
     'values': values.toJson(),
+    'quickEntry': quickEntry,
   };
 
   static SessionSettings fromJson(Object? json) {
@@ -46,6 +52,8 @@ class SessionSettings {
       components: ScoringComponents.fromJson(map['components']),
       preset: ScoringPreset.fromJson(map['preset']),
       values: ScoringValues.fromJson(map['values']),
+      // Sessions stored before quick entry existed have no value.
+      quickEntry: (map['quickEntry'] as bool?) ?? false,
     );
   }
 }

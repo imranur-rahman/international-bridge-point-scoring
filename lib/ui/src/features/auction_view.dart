@@ -90,7 +90,7 @@ class AuctionTable extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: turn ? scheme.onPrimary : scheme.onSurface,
-                fontWeight: FontWeight.w600,
+                fontWeight: turn ? FontWeight.w700 : FontWeight.w400,
               ),
             ),
             Text(
