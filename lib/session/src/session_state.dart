@@ -10,6 +10,9 @@ enum DealStage {
   contract('Contract'),
   play('Play'),
   result('Result'),
+
+  /// The quick-entry screen: contract, result, and honors on one screen.
+  entry('Entry'),
   scored('Scored');
 
   const DealStage(this.label);

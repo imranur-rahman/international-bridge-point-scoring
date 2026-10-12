@@ -137,30 +137,24 @@ void main() {
     );
     final h = await atDeal(tester, s);
     expect(find.text('Needs 10 tricks'), findsOneWidget);
-    // On a phone, "−3" to "+3" show first; the rest scroll sideways.
-    for (final label in ['−3', '−1', 'Made', '+3']) {
+    for (final label in ['−10', '−1', 'Made', '+3']) {
+      expect(find.byKey(Key('result-$label')), findsOneWidget);
+    }
+    expect(find.byKey(const Key('result-+4')), findsNothing);
+    await h.tapKey('result-Made');
+    expect(find.text('Contract fulfilled'), findsOneWidget);
+    for (final (name, points) in [
+      ('fourInOneHand', '80'),
+      ('fourPlusOne', '90'),
+    ]) {
       expect(
         find.descendant(
-          of: find.byKey(const Key('result-main')),
-          matching: find.byKey(Key('result-$label')),
+          of: find.byKey(Key('holding-$name')),
+          matching: find.text(points),
         ),
         findsOneWidget,
       );
     }
-    expect(find.byKey(const Key('result-+4')), findsNothing);
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('result-−10')),
-      100,
-      scrollable: find.descendant(
-        of: find.byKey(const Key('result-scroll')),
-        matching: find.byType(Scrollable),
-      ),
-    );
-    expect(find.byKey(const Key('result-−10')), findsOneWidget);
-    await h.tapKey('result-Made');
-    expect(find.text('Contract fulfilled'), findsOneWidget);
-    expect(find.text('4 honors in one hand · 80'), findsOneWidget);
-    expect(find.text('5 honors, 4 + 1 · 90'), findsOneWidget);
     // Scoring needs the honors.
     var score = tester.widget<FilledButton>(
       find.byKey(const Key('score-deal')),
@@ -271,5 +265,97 @@ void main() {
       return true;
     });
     expect(suitSize, closeTo(base * 1.3, 0.01));
+  });
+
+  testWidgets('even result grid on a phone', (tester) async {
+    final s = run(newSession(), [
+      const AdvanceFromStart(),
+      SetContract(contract('4S', Seat.south)),
+      const ConfirmContract(),
+      const FinishPlay(),
+    ]);
+    await atDeal(tester, s, size: const Size(360, 780));
+    const labels = [
+      '−10', '−9', '−8', '−7', '−6', '−5', '−4', //
+      '−3', '−2', '−1', 'Made', '+1', '+2', '+3',
+    ];
+    final rects = [
+      for (final l in labels) tester.getRect(find.byKey(Key('result-$l'))),
+    ];
+    // All cells have the same size.
+    for (final r in rects) {
+      expect(r.width, closeTo(rects.first.width, 0.5));
+      expect(r.height, closeTo(rects.first.height, 0.5));
+      expect(r.height, greaterThanOrEqualTo(44));
+    }
+    // −10 to −4 in the first row, −3 to +3 in the second row.
+    for (var i = 0; i < 7; i++) {
+      expect(rects[i].top, closeTo(rects.first.top, 0.5));
+      expect(rects[i + 7].top, greaterThan(rects.first.bottom));
+    }
+    // The grid fits the screen.
+    expect(rects[6].right, lessThanOrEqualTo(360));
+    expect(rects[13].right, lessThanOrEqualTo(360));
+  });
+
+  testWidgets('the full result line uses the color of its group', (
+    tester,
+  ) async {
+    final s = run(newSession(), [
+      const AdvanceFromStart(),
+      SetContract(contract('4S', Seat.south)),
+      const ConfirmContract(),
+      const FinishPlay(),
+      const SetTricks(9),
+    ]);
+    await atDeal(tester, s);
+    final text = tester.widget<Text>(find.byKey(const Key('full-result')));
+    final scheme = Theme.of(
+      tester.element(find.byKey(const Key('full-result'))),
+    ).colorScheme;
+    expect(text.data, 'Down 1 (1 undertrick)');
+    expect(text.style!.color, scheme.error);
+    expect(text.style!.fontWeight, FontWeight.w700);
+  });
+
+  testWidgets('honors cells of one row have the same width', (tester) async {
+    final s = run(newSession(settings(components: const ScoringComponents())), [
+      const AdvanceFromStart(),
+      SetContract(contract('4H', Seat.south)),
+      const ConfirmContract(),
+      const FinishPlay(),
+    ]);
+    final h = await atDeal(tester, s, size: const Size(360, 780));
+    final rows = [
+      ['threeHonors', 'fourSplit'],
+      ['fourInOneHand', 'fiveSplit'],
+      ['fourPlusOne', 'fiveInOneHand'],
+    ];
+    for (final row in rows) {
+      final a = tester.getRect(find.byKey(Key('holding-${row[0]}')));
+      final b = tester.getRect(find.byKey(Key('holding-${row[1]}')));
+      expect(a.width, closeTo(b.width, 0.5));
+      expect(a.top, closeTo(b.top, 0.5));
+    }
+    // The two sides are equal halves.
+    final ns = tester.getRect(
+      find.ancestor(
+        of: find.byKey(const Key('honors-side-northSouth')),
+        matching: find.byType(TextButton),
+      ),
+    );
+    final ew = tester.getRect(
+      find.ancestor(
+        of: find.byKey(const Key('honors-side-eastWest')),
+        matching: find.byType(TextButton),
+      ),
+    );
+    expect(ns.width, closeTo(ew.width, 1));
+    // A holding needs a side first.
+    await h.tapKey('holding-threeHonors');
+    expect(h.session!.draft!.honors, isNull);
+    await h.tapKey('honors-side-eastWest');
+    await h.tapKey('holding-threeHonors');
+    expect(h.session!.draft!.honors!.side, Side.eastWest);
   });
 }

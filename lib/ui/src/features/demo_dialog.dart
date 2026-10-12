@@ -58,7 +58,7 @@ class _DemoDialogState extends State<DemoDialog> {
               Text(
                 'Step $step of $count',
                 key: const Key('demo-step'),
-                style: text.bodySmall,
+                style: text.labelLarge,
               ),
               const SizedBox(height: 12),
               for (final d in ledger.deals)

@@ -13,9 +13,20 @@ ThemeData buildTheme(Brightness brightness) {
     seedColor: feltGreen,
     brightness: brightness,
   );
+  final base = ThemeData(colorScheme: scheme, useMaterial3: true).textTheme;
+  // Headings and key values are bold, body text stays normal, so that the
+  // important parts of each page stand out (design decision D4).
+  final textTheme = base.copyWith(
+    headlineSmall: base.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+    titleLarge: base.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+    titleMedium: base.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+    titleSmall: base.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+    labelLarge: base.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+  );
   return ThemeData(
     colorScheme: scheme,
     useMaterial3: true,
+    textTheme: textTheme,
     scaffoldBackgroundColor: scheme.surface,
     visualDensity: VisualDensity.standard,
     materialTapTargetSize: MaterialTapTargetSize.padded,

@@ -185,5 +185,6 @@ SessionSettings rematchSettings(SessionState ended) {
     components: s.components,
     preset: s.preset,
     values: s.values,
+    quickEntry: s.quickEntry,
   );
 }

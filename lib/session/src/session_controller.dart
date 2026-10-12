@@ -87,6 +87,13 @@ final class EditDeal extends SessionCommand {
   final DealResult? result;
 }
 
+/// Records a complete deal from the quick-entry screen. A null [result]
+/// records a passed-out deal.
+final class RecordQuickDeal extends SessionCommand {
+  const RecordQuickDeal(this.result);
+  final DealResult? result;
+}
+
 /// Ends the session between deals.
 final class EndSession extends SessionCommand {
   const EndSession();
@@ -136,9 +143,15 @@ class SessionController {
     createdAt: now,
     settings: settings,
     records: const [],
-    draft: DealDraft(dealer: settings.firstDealer, stage: DealStage.start),
+    draft: DealDraft(dealer: settings.firstDealer, stage: firstStage(settings)),
     status: SessionStatus.active,
   );
+
+  /// The first stage of each deal: the quick-entry screen, or the deal start.
+  static DealStage firstStage(SessionSettings settings) =>
+      settings.quickEntry && !settings.biddingStep
+      ? DealStage.entry
+      : DealStage.start;
 
   static SessionState apply(
     SessionState state,
@@ -258,6 +271,32 @@ class SessionController {
         }
         return withDraft(draft.copyWith(honors: () => honors));
 
+      case RecordQuickDeal(:final result):
+        needStage(DealStage.entry);
+        if (result == null) {
+          return _record(
+            state,
+            DealRecord(dealer: draft.dealer, result: null),
+            time,
+          );
+        }
+        if (settings.components.honors && result.honors == null) {
+          throw InvalidCommandException('Select the honors');
+        }
+        return _record(
+          state,
+          DealRecord(
+            dealer: draft.dealer,
+            result: settings.components.honors
+                ? result
+                : DealResult(
+                    contract: result.contract,
+                    tricksTaken: result.tricksTaken,
+                  ),
+          ),
+          time,
+        );
+
       case ScoreDeal():
         needStage(DealStage.result);
         final result = draftResult(state);
@@ -289,7 +328,7 @@ class SessionController {
             settings.biddingStep ? DealStage.auction : DealStage.start,
           DealStage.play => DealStage.contract,
           DealStage.result => DealStage.play,
-          DealStage.start || DealStage.scored => null,
+          DealStage.start || DealStage.entry || DealStage.scored => null,
         };
         if (previous == null) {
           throw InvalidCommandException('No previous stage');
@@ -316,8 +355,10 @@ class SessionController {
     );
   }
 
-  static DealDraft _newDraft(SessionState state, int index) =>
-      DealDraft(dealer: state.dealerOf(index), stage: DealStage.start);
+  static DealDraft _newDraft(SessionState state, int index) => DealDraft(
+    dealer: state.dealerOf(index),
+    stage: firstStage(state.settings),
+  );
 
   static SessionState _record(
     SessionState state,
@@ -430,6 +471,7 @@ class SessionController {
     final draft = state.draft;
     if (draft != null &&
         draft.stage != DealStage.start &&
+        draft.stage != DealStage.entry &&
         draft.stage != DealStage.scored) {
       throw InvalidCommandException('End the session between deals');
     }

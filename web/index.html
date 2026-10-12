@@ -29,6 +29,7 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
+  <meta name="theme-color" content="#1E6B45">
   <title>IB Score</title>
   <link rel="manifest" href="manifest.json">
 </head>
@@ -42,5 +43,28 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Keep the app available offline (see sw.js). Service workers need HTTPS
+    // or localhost.
+    if ('serviceWorker' in navigator &&
+        (location.protocol === 'https:' ||
+         ['localhost', '127.0.0.1'].includes(location.hostname))) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function (e) {
+          console.warn('Service worker not registered:', e);
+        });
+        // After the app has loaded, send the URLs of the loaded files to the
+        // worker, so that it stores the files of a first visit too.
+        navigator.serviceWorker.ready.then(function (registration) {
+          setTimeout(function () {
+            var urls = performance.getEntriesByType('resource')
+                .map(function (e) { return e.name; });
+            urls.push(document.baseURI);
+            registration.active.postMessage({ type: 'cache-urls', urls: urls });
+          }, 4000);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

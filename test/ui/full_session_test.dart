@@ -1,4 +1,5 @@
 import 'package:bridge_scorekeeper/core/core.dart';
+import 'package:bridge_scorekeeper/scoring/scoring.dart';
 import 'package:bridge_scorekeeper/session/session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -98,7 +99,7 @@ void main() {
   });
 
   group('Reload at each stage', () {
-    for (final stage in DealStage.values) {
+    for (final stage in DealStage.values.where((s) => s != DealStage.entry)) {
       testWidgets('reload at ${stage.label}', (tester) async {
         var s = newSession(settings(bidding: true));
         s = run(s, [
@@ -133,5 +134,22 @@ void main() {
         }
       });
     }
+    testWidgets('reload at Entry (quick entry)', (tester) async {
+      final s = newSession(
+        SessionSettings(
+          players: players,
+          firstDealer: Seat.north,
+          endRule: const DealCountRule(16),
+          biddingStep: false,
+          components: const ScoringComponents(honors: false),
+          preset: ScoringPreset.standard,
+          values: ScoringValues.standard(),
+          quickEntry: true,
+        ),
+      );
+      final h = await pumpApp(tester, active: s, location: '/deal');
+      expect(h.session!.draft!.stage, DealStage.entry);
+      expect(find.byKey(const Key('quick-score')), findsOneWidget);
+    });
   });
 }

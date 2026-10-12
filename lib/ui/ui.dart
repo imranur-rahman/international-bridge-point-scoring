@@ -13,6 +13,7 @@ export 'src/features/help_texts.dart';
 export 'src/features/home_screen.dart';
 export 'src/features/house_rules_screen.dart';
 export 'src/features/past_sessions_screen.dart';
+export 'src/features/quick_entry_view.dart';
 export 'src/features/sample_calculator.dart';
 export 'src/features/score_sheet.dart';
 export 'src/features/settings_screen.dart';

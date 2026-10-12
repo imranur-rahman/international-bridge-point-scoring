@@ -35,7 +35,7 @@ Alternatives: network-first with a timeout (each open waits for the network, so 
 
 ### D2. Icon script
 
-`tool/make_icons.py` draws one 1024 × 1024 master icon with Pillow: felt green (`#1E6B45`) with rounded corners, a white ♠ from the bundled Noto Sans Symbols 2 font, and "IB" from a bold sans-serif font file given on the command line (Roboto Bold from the Google Fonts repository, Apache License 2.0; the script does not ship it). The script then writes each size for web (favicon 32 px, 192 px, 512 px, and maskable 192 px and 512 px with the content inside the inner 80 %), Android (`mipmap-*` `ic_launcher.png`), and iOS (each file in `AppIcon.appiconset`, without transparency, as Apple needs). The PNG files are committed, so builds do not need Python.
+`tool/make_icons.py` draws one 1024 × 1024 master icon with Pillow: felt green (`#1E6B45`) with rounded corners, a white ♠ from the bundled Noto Sans Symbols 2 font, and "IB" from a bold sans-serif font file given on the command line (the variable Roboto font from the Google Fonts repository, SIL Open Font License 1.1, set to bold; the script does not ship it). The script then writes each size for web (favicon 32 px, 192 px, 512 px, and maskable 192 px and 512 px with the content inside the inner 80 %), Android (`mipmap-*` `ic_launcher.png`), and iOS (each file in `AppIcon.appiconset`, without transparency, as Apple needs). The PNG files are committed, so builds do not need Python.
 
 ### D3. Quick entry in the session
 
