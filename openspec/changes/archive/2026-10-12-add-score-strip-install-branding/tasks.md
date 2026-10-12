@@ -18,7 +18,7 @@
 - [x] 4.1 Keep the install prompt event in `web/index.html` and add `ibInstallState` and `ibInstall`
 - [x] 4.2 Add the `InstallPrompt` interface with the web and stub implementations, and a provider; check that `flutter test` and `flutter build apk` compile with the stub
 - [x] 4.3 Add the install action and the iPhone guide to the home screen; check with widget tests and a fake `InstallPrompt` for "Install in Chrome", "iPhone guide", and "Installed app"
-- [ ] 4.4 Check in Chrome on localhost that the action shows, that it opens the install prompt of Chrome, and that `flutter analyze` and `flutter test` pass
+- [x] 4.4 Check in Chrome on localhost that the action shows, that it opens the install prompt of Chrome, and that `flutter analyze` and `flutter test` pass
 
 ## 5. Storage actions
 
