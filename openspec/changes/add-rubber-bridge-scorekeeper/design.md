@@ -81,9 +81,10 @@ Alternative: separate Dart packages in a pub workspace. The package system enfor
 - `storage`:
   - `abstract interface class SessionRepository` with `loadActive()`, `saveActive(state)`, `listPast()`, `loadPast(id)`, `archive(state)`, `deletePast(id)`.
   - `abstract interface class PresetRepository` with `loadHouseRules()`, `saveHouseRules(values)`, `loadLastPreset()`, `saveLastPreset(preset)`.
-  - `InMemorySessionRepository` and `InMemoryPresetRepository` for tests.
+  - `abstract interface class DisplayPreferencesRepository` with load and save of the theme mode, the text size, the suit colors, and the score sheet view.
+  - `InMemorySessionRepository`, `InMemoryPresetRepository`, and `InMemoryDisplayPreferencesRepository` for tests.
 
-The `ui` module talks to the other modules only through `SessionController`, `LedgerSnapshot`, `PlayRoles`, `ScoringValues`, `SessionRepository`, and `PresetRepository`.
+The `ui` module talks to the other modules only through `SessionController`, `LedgerSnapshot`, `PlayRoles`, `ScoringValues`, `SessionRepository`, `PresetRepository`, and `DisplayPreferencesRepository`.
 
 ### D3. Event list as the source of truth
 
