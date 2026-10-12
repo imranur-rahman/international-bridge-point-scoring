@@ -17,7 +17,7 @@ class HomeScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bridge Score'),
+        title: const Text('IB Score'),
         actions: [
           IconButton(
             tooltip: 'Settings',

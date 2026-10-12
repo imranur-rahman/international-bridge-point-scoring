@@ -344,6 +344,8 @@ void main() {
       expect(deal('3N', diff: -2).fullResult, 'Down 2 (2 undertricks)');
       expect(deal('3N', diff: -2).tricksTaken, 7);
       expect(deal('4S', diff: 1).shortResult, '+1');
+      expect(deal('4S', diff: -2).shortResult, '−2');
+      expect(deal('4S').shortResult, 'Made');
     });
   });
 

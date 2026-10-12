@@ -62,19 +62,19 @@ At the play stage, the system SHALL show:
 - **THEN** the system shows Bob as the dummy and Alice as the player who makes the opening lead
 
 ### Requirement: Result entry
-At the result stage, the system SHALL show the contract and the number of tricks that the declarer needs (level + 6). The system SHALL let the user select the result with one button for each possible result, in traditional words:
-- "Down N" for N from 1 to the level + 6 (N undertricks),
+At the result stage, the system SHALL show the contract and the number of tricks that the declarer needs (level + 6). The system SHALL let the user select the result with one button for each possible result, with short texts in one style:
+- "−N" for N from 1 to the level + 6 (N undertricks),
 - "Made" when the declarer took exactly the level + 6 tricks,
 - "+N" for N from 1 to 7 − level (N overtricks).
 
-The system SHALL not show a result that is not possible for the contract. On a narrow screen, the system SHALL first show "Down 3" to "+3" (or fewer when fewer are possible), with the other results available by a scroll. The system SHALL store the result as the number of tricks taken, from 0 to 13. After the selection, the system SHALL show the result in full words:
+The system SHALL not show a result that is not possible for the contract. On a narrow screen, the system SHALL first show "−3" to "+3" (or fewer when fewer are possible), with the other results available by a scroll. The system SHALL store the result as the number of tricks taken, from 0 to 13. After the selection, the system SHALL show the result in full words:
 - "Contract fulfilled" for "Made",
 - "Contract fulfilled with N overtrick(s)" for "+N",
-- "Down N (N undertricks)" for "Down N".
+- "Down N (N undertricks)" for "−N".
 
 #### Scenario: Buttons for a game contract
 - **WHEN** the contract is 4♠ by Carol
-- **THEN** the system shows "Needs 10 tricks" and the buttons "Down 10" to "Down 1", "Made", "+1", "+2", and "+3"
+- **THEN** the system shows "Needs 10 tricks" and the buttons "−10" to "−1", "Made", "+1", "+2", and "+3"
 
 #### Scenario: No overtrick at the grand slam
 - **WHEN** the contract is 7NT
@@ -89,7 +89,7 @@ The system SHALL not show a result that is not possible for the contract. On a n
 - **THEN** the system shows "Contract fulfilled with 2 overtricks"
 
 #### Scenario: Undertricks
-- **WHEN** the contract is 3NT and the user selects "Down 2"
+- **WHEN** the contract is 3NT and the user selects "−2"
 - **THEN** the system shows "Down 2 (2 undertricks)" and records 7 tricks taken
 
 ### Requirement: Honors entry

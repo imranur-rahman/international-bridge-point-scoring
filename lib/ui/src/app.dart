@@ -14,7 +14,7 @@ class BridgeScorekeeperApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final display = ref.watch(displayProvider);
     return MaterialApp.router(
-      title: 'Bridge Score',
+      title: 'IB Score',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),

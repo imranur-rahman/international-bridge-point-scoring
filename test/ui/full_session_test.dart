@@ -53,7 +53,7 @@ void main() {
     // Deal 1, dealer Alice: 4♠ by Alice, made. N-S win a game.
     await playByTaps(h, ['1S', 'P', '4S', 'P', 'P', 'P'], 'Made');
     // Deal 2, dealer Bob: 4♥ by Bob, down 1. N-S +50.
-    await playByTaps(h, ['1H', 'P', '4H', 'P', 'P', 'P'], 'Down 1');
+    await playByTaps(h, ['1H', 'P', '4H', 'P', 'P', 'P'], '−1');
     // Deal 3, dealer Carol: 3NT by Carol, +1. N-S win the rubber 2–0.
     await playByTaps(h, ['3N', 'P', 'P', 'P'], '+1');
     expect(h.session!.ledger.rubbers.first.winner, Side.northSouth);

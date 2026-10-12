@@ -33,6 +33,8 @@ class SuitText extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final setting = ref.watch(displayProvider.select((d) => d.suitColors));
     final brightness = Theme.of(context).brightness;
+    final baseSize =
+        DefaultTextStyle.of(context).style.merge(style).fontSize ?? 14;
     final spans = <TextSpan>[];
     final buffer = StringBuffer();
     void flush() {
@@ -54,6 +56,7 @@ class SuitText extends ConsumerWidget {
             text: ch,
             style: TextStyle(
               fontFamily: suitFontFamily,
+              fontSize: baseSize * suitScale,
               color: strainColor(strain, brightness, setting),
             ),
           ),
@@ -72,6 +75,9 @@ class SuitText extends ConsumerWidget {
 /// The bundled font that draws the suit symbols as text. Some platforms
 /// otherwise draw them with a color emoji font that ignores the text color.
 const String suitFontFamily = 'SuitSymbols';
+
+/// The size of a suit symbol relative to the text around it.
+const double suitScale = 1.3;
 
 /// Centers the content at most 600 logical pixels wide, with a 16 pixel
 /// side gutter.

@@ -137,8 +137,8 @@ void main() {
     );
     final h = await atDeal(tester, s);
     expect(find.text('Needs 10 tricks'), findsOneWidget);
-    // On a phone, "Down 3" to "+3" show first; the rest scroll sideways.
-    for (final label in ['Down 3', 'Down 1', 'Made', '+3']) {
+    // On a phone, "−3" to "+3" show first; the rest scroll sideways.
+    for (final label in ['−3', '−1', 'Made', '+3']) {
       expect(
         find.descendant(
           of: find.byKey(const Key('result-main')),
@@ -149,14 +149,14 @@ void main() {
     }
     expect(find.byKey(const Key('result-+4')), findsNothing);
     await tester.scrollUntilVisible(
-      find.byKey(const Key('result-Down 10')),
+      find.byKey(const Key('result-−10')),
       100,
       scrollable: find.descendant(
         of: find.byKey(const Key('result-scroll')),
         matching: find.byType(Scrollable),
       ),
     );
-    expect(find.byKey(const Key('result-Down 10')), findsOneWidget);
+    expect(find.byKey(const Key('result-−10')), findsOneWidget);
     await h.tapKey('result-Made');
     expect(find.text('Contract fulfilled'), findsOneWidget);
     expect(find.text('4 honors in one hand · 80'), findsOneWidget);
@@ -183,7 +183,7 @@ void main() {
       const FinishPlay(),
     ]);
     final h = await atDeal(tester, s);
-    await h.tapKey('result-Down 2');
+    await h.tapKey('result-−2');
     expect(find.text('Down 2 (2 undertricks)'), findsOneWidget);
     expect(h.session!.draft!.tricksTaken, 7);
   });
@@ -220,6 +220,14 @@ void main() {
     testWidgets('phone', (tester) async {
       final h = await atDeal(tester, newSession(), size: const Size(390, 844));
       expect(find.byKey(const Key('side-sheet')), findsNothing);
+      // The "Sheet" button is a filled button, so it stands out.
+      expect(
+        find.ancestor(
+          of: find.text('Sheet'),
+          matching: find.byWidgetPredicate((w) => w is FilledButton),
+        ),
+        findsOneWidget,
+      );
       await h.tapKey('open-sheet');
       expect(find.byKey(const Key('paper-sheet')), findsOneWidget);
     });
@@ -239,5 +247,29 @@ void main() {
       expect(find.text('Contract fulfilled'), findsOneWidget);
       expect(h.session!.draft!.tricksTaken, 10);
     });
+  });
+
+  testWidgets('suit symbols are bigger than the text around them', (
+    tester,
+  ) async {
+    final s = run(newSession(), [
+      const AdvanceFromStart(),
+      SetContract(contract('4S', Seat.south)),
+      const ConfirmContract(),
+    ]);
+    await atDeal(tester, s);
+    final rich = tester.widget<RichText>(
+      find.descendant(
+        of: find.byKey(const Key('contract-headline')),
+        matching: find.byType(RichText),
+      ),
+    );
+    final base = rich.text.style!.fontSize!;
+    double? suitSize;
+    rich.text.visitChildren((span) {
+      if (span is TextSpan && span.text == '♠') suitSize = span.style?.fontSize;
+      return true;
+    });
+    expect(suitSize, closeTo(base * 1.3, 0.01));
   });
 }

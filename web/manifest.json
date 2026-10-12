@@ -1,11 +1,11 @@
 {
-    "name": "bridge_scorekeeper",
-    "short_name": "bridge_scorekeeper",
+    "name": "IB Score",
+    "short_name": "IB Score",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Keep the score of rubber bridge deals by the rules.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
