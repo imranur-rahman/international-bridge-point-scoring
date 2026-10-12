@@ -40,11 +40,18 @@ class DealScreen extends ConsumerWidget {
             title: Text(_title(session), key: const Key('deal-title')),
             actions: [
               if (!wide)
-                TextButton.icon(
-                  key: const Key('open-sheet'),
-                  icon: const Icon(Icons.table_chart_outlined),
-                  label: const Text('Sheet'),
-                  onPressed: () => context.push('/sheet'),
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: FilledButton.icon(
+                    key: const Key('open-sheet'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(48, 40),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                    ),
+                    icon: const Icon(Icons.table_chart_outlined, size: 20),
+                    label: const Text('Sheet'),
+                    onPressed: () => context.push('/sheet'),
+                  ),
                 ),
               _DealMenu(session: session),
             ],
@@ -671,8 +678,8 @@ class _ResultViewState extends ConsumerState<_ResultView> {
   }
 }
 
-/// One button for each possible result. On a narrow screen, "Down 3" to
-/// "+3" show first, and the other results are in a row that scrolls
+/// One button for each possible result. On a narrow screen, "−3" to "+3"
+/// show first, and the other results are in a row that scrolls
 /// sideways.
 class ResultPicker extends StatelessWidget {
   const ResultPicker({
@@ -708,7 +715,7 @@ class ResultPicker extends StatelessWidget {
           );
         }
         final main = options.where((o) => o.difference >= -3).toList();
-        // The other results, nearest first: Down 4, Down 5, ...
+        // The other results, nearest first: −4, −5, ...
         final more = options
             .where((o) => o.difference < -3)
             .toList()

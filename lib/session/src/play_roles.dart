@@ -20,34 +20,26 @@ class PlayRoles {
 class ResultOption {
   const ResultOption(this.label, this.tricksTaken, this.difference);
 
-  /// "Down N", "Made", or "+N".
+  /// "−N", "Made", or "+N".
   final String label;
   final int tricksTaken;
 
   /// Negative for undertricks, 0 for made, positive for overtricks.
   final int difference;
 
-  /// All possible results for a contract at [level], from "Down (level+6)"
-  /// to "+(7 − level)".
+  /// All possible results for a contract at [level], from "−(level+6)" to
+  /// "+(7 − level)".
   static List<ResultOption> forLevel(int level) {
     final needed = level + 6;
     return [
       for (var tricks = 0; tricks <= 13; tricks++)
-        ResultOption(
-          tricks == needed
-              ? 'Made'
-              : tricks > needed
-              ? '+${tricks - needed}'
-              : 'Down ${needed - tricks}',
-          tricks,
-          tricks - needed,
-        ),
+        ResultOption(shortResultText(tricks - needed), tricks, tricks - needed),
     ];
   }
 }
 
 /// Short text of a result for the history, for example
-/// "4♠X by Carol · Down 1" or "Passed out".
+/// "4♠X by Carol · −1" or "Passed out".
 String describeResult(DealResult? result, String Function(Seat) nameOf) {
   if (result == null) return 'Passed out';
   final c = result.contract;

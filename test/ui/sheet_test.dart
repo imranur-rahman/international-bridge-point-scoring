@@ -80,7 +80,7 @@ void main() {
       final h = await pumpApp(tester, active: s, location: '/sheet');
       await h.tapKey('tab-history');
       expect(
-        textContaining('Deal 2 · 4♥X by Bob · Down 1 · Alice & Carol +100'),
+        textContaining('Deal 2 · 4♥X by Bob · −1 · Alice & Carol +100'),
         findsOneWidget,
       );
     });
@@ -107,7 +107,7 @@ void main() {
       await h.tapKey('tab-history');
       await h.tapKey('history-1');
       expect(find.text('Edit deal 1'), findsOneWidget);
-      await h.tapKey('result-Down 1');
+      await h.tapKey('result-−1');
       await h.tapKey('preview-edit');
       expect(find.byKey(const Key('edit-preview')), findsOneWidget);
       expect(textContaining('Alice & Carol now not vulnerable'), findsWidgets);

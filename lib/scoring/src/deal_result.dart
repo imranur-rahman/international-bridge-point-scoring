@@ -128,12 +128,8 @@ class DealResult {
   int get overtricks => difference > 0 ? difference : 0;
   int get undertricks => difference < 0 ? -difference : 0;
 
-  /// Short text in bridge words: "Made", "+2", or "Down 1".
-  String get shortResult => difference == 0
-      ? 'Made'
-      : difference > 0
-      ? '+$difference'
-      : 'Down ${-difference}';
+  /// Short text: "Made", "+2", or "−1" (one undertrick).
+  String get shortResult => shortResultText(difference);
 
   /// Full text in bridge words.
   String get fullResult {
@@ -179,3 +175,11 @@ class DealResult {
     );
   }
 }
+
+/// Short text of a result: "Made", "+N" for overtricks, or "−N" for
+/// undertricks. The minus is U+2212, so that it has the width of "+".
+String shortResultText(int difference) => difference == 0
+    ? 'Made'
+    : difference > 0
+    ? '+$difference'
+    : '\u2212${-difference}';

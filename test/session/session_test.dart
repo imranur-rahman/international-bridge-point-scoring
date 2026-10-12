@@ -220,7 +220,7 @@ void main() {
   group('Result options', () {
     test('buttons for a game contract', () {
       final options = ResultOption.forLevel(4);
-      expect(options.first.label, 'Down 10');
+      expect(options.first.label, '−10');
       expect(options.map((o) => o.label), contains('Made'));
       expect(options.last.label, '+3');
       expect(options, hasLength(14));
@@ -336,7 +336,7 @@ void main() {
 
     test('edit the result', () {
       final r = s.records[0].result!;
-      expect(describeResult(r, players.nameOf), '4♠X by Carol · Down 1');
+      expect(describeResult(r, players.nameOf), '4♠X by Carol · −1');
       final edited = run(s, [EditDeal(0, r.copyWith(tricksTaken: 10))]);
       expect(
         describeResult(edited.records[0].result, players.nameOf),
@@ -387,7 +387,7 @@ void main() {
       expect(rec.isEdited, isTrue);
       expect(
         describeResult(rec.original!.result, players.nameOf),
-        '4♠X by Carol · Down 1',
+        '4♠X by Carol · −1',
       );
       expect(rec.editTimes, [t1, t2]);
     });

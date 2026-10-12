@@ -66,7 +66,7 @@ The system SHALL show a list of all recorded deals in order. Each entry SHALL sh
 
 #### Scenario: History entry
 - **WHEN** deal 2 was 4♥ doubled by Bob, down 1, with Bob & Dave vulnerable
-- **THEN** the history shows "Deal 2 · 4♥X by Bob · Down 1 · Alice & Carol +200"
+- **THEN** the history shows "Deal 2 · 4♥X by Bob · −1 · Alice & Carol +200"
 
 ### Requirement: Undo last deal
 The system SHALL let the user undo the last scored deal. The undo SHALL remove the deal from the history, recalculate all totals, and return the dealer to the dealer of the removed deal. The system SHALL ask for confirmation before the undo.
@@ -79,7 +79,7 @@ The system SHALL let the user undo the last scored deal. The undo SHALL remove t
 The system SHALL let the user open any recorded deal from the deal history and edit its contract (level, denomination, double state), its declarer, its result, and its honors. The edit screen SHALL use the same inputs as the deal stages. The dealer of the deal SHALL not change. A "Passed out" check box SHALL let the user change a played deal to a passed-out deal, or a passed-out deal to a played deal. When the bidding step was on for that deal, the edit SHALL replace the recorded auction with the changed contract and mark the auction as edited.
 
 #### Scenario: Edit the result
-- **WHEN** the user opens deal 3 "4♠X by Carol · Down 1", changes the result to "Made", and saves
+- **WHEN** the user opens deal 3 "4♠X by Carol · −1", changes the result to "Made", and saves
 - **THEN** the history shows deal 3 as "4♠X by Carol · Made"
 
 #### Scenario: Played deal to passed out
@@ -94,7 +94,7 @@ The system SHALL let the user open any recorded deal from the deal history and e
 Before the system saves an edit, it SHALL show a preview with the session total of each side before and after the edit, and a list of each later deal whose vulnerability or points change. The user SHALL then select "Save edit" or "Cancel". "Cancel" SHALL leave the session with no change. After "Save edit", the system SHALL recalculate all later deals, including vulnerability, games, rubbers, and totals.
 
 #### Scenario: Edit changes a later vulnerability
-- **WHEN** the user changes deal 1 from "4♠ fulfilled" to "Down 1", and deal 3 used the vulnerability that came from the game in deal 1
+- **WHEN** the user changes deal 1 from "4♠ fulfilled" to "−1", and deal 3 used the vulnerability that came from the game in deal 1
 - **THEN** the preview lists deal 3 with "now not vulnerable" and its old and new points, and after "Save edit" the system scores deal 3 again as not vulnerable for that side and updates all totals
 
 #### Scenario: Cancel
@@ -105,8 +105,8 @@ Before the system saves an edit, it SHALL show a preview with the session total 
 The deal history SHALL show an edit mark on each deal that the user edited. When the user taps the mark, the system SHALL show the original entry of the deal (as it was first scored) and the date and time of each edit. Later edits of the same deal SHALL keep the original entry.
 
 #### Scenario: Show original entry
-- **WHEN** deal 3 was first scored as "4♠X by Carol · Down 1" and later edited to "Made"
-- **THEN** the history shows deal 3 as "4♠X by Carol · Made" with an edit mark, and a tap on the mark shows "Original: 4♠X by Carol · Down 1" and the time of the edit
+- **WHEN** deal 3 was first scored as "4♠X by Carol · −1" and later edited to "Made"
+- **THEN** the history shows deal 3 as "4♠X by Carol · Made" with an edit mark, and a tap on the mark shows "Original: 4♠X by Carol · −1" and the time of the edit
 
 #### Scenario: Undo does not keep a mark
 - **WHEN** the user undoes the last deal
