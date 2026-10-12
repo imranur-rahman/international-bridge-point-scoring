@@ -1,0 +1,22 @@
+/// Public interface of the `ui` module: the app widget, its providers, and
+/// the screens.
+library;
+
+export 'src/app.dart';
+export 'src/features/auction_view.dart';
+export 'src/features/deal_screen.dart';
+export 'src/features/edit_deal_screen.dart';
+export 'src/features/help_button.dart';
+export 'src/features/help_texts.dart';
+export 'src/features/home_screen.dart';
+export 'src/features/house_rules_screen.dart';
+export 'src/features/past_sessions_screen.dart';
+export 'src/features/sample_calculator.dart';
+export 'src/features/score_sheet.dart';
+export 'src/features/settings_screen.dart';
+export 'src/features/setup_wizard.dart';
+export 'src/features/summary_screen.dart';
+export 'src/providers.dart';
+export 'src/router.dart';
+export 'src/theme.dart';
+export 'src/widgets.dart';
