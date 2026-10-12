@@ -24,12 +24,21 @@ class HelpButton extends StatefulWidget {
     required this.help,
     required this.id,
     this.standardDefault,
+    this.hasDemo = false,
+    this.onDemo,
   });
 
   final HelpText help;
 
   /// The standard default of the value, shown in the overlay.
   final int? standardDefault;
+
+  /// True to show the "Show demo" action in the overlay.
+  final bool hasDemo;
+
+  /// Opens the demo. Null disables the action, for example when a value on
+  /// the screen is not valid.
+  final VoidCallback? onDemo;
 
   /// A unique id for this button inside its [HelpScope].
   final Object id;
@@ -91,8 +100,20 @@ class _HelpButtonState extends State<HelpButton> {
       child: OverlayPortal(
         controller: _portal,
         overlayChildBuilder: (context) {
-          final width = MediaQuery.sizeOf(context).width;
+          final screen = MediaQuery.sizeOf(context);
+          final width = screen.width;
           final scheme = Theme.of(context).colorScheme;
+          // Open below the icon, or above it when there is more space above.
+          final box = this.context.findRenderObject() as RenderBox?;
+          final top = box?.localToGlobal(Offset.zero).dy ?? 0;
+          final bottom = top + (box?.size.height ?? 0);
+          final spaceBelow = screen.height - bottom - 16;
+          final spaceAbove = top - 16;
+          final below = spaceBelow >= spaceAbove;
+          final maxHeight = (below ? spaceBelow : spaceAbove).clamp(
+            120.0,
+            screen.height,
+          );
           final text = Theme.of(context).textTheme;
           return Stack(
             children: [
@@ -105,8 +126,12 @@ class _HelpButtonState extends State<HelpButton> {
               ),
               CompositedTransformFollower(
                 link: _link,
-                targetAnchor: Alignment.bottomRight,
-                followerAnchor: Alignment.topRight,
+                targetAnchor: below
+                    ? Alignment.bottomRight
+                    : Alignment.topRight,
+                followerAnchor: below
+                    ? Alignment.topRight
+                    : Alignment.bottomRight,
                 child: CallbackShortcuts(
                   bindings: {
                     const SingleActivator(LogicalKeyboardKey.escape): _close,
@@ -121,8 +146,9 @@ class _HelpButtonState extends State<HelpButton> {
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
                           maxWidth: (width - 32).clamp(200, 340),
+                          maxHeight: maxHeight,
                         ),
-                        child: Padding(
+                        child: SingleChildScrollView(
                           padding: const EdgeInsets.fromLTRB(16, 8, 8, 16),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -156,6 +182,32 @@ class _HelpButtonState extends State<HelpButton> {
                                 'Example: ${help.example}',
                                 style: text.bodySmall,
                               ),
+                              if (widget.hasDemo) ...[
+                                const SizedBox(height: 12),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FilledButton.tonalIcon(
+                                    key: const Key('show-demo'),
+                                    icon: const Icon(Icons.play_circle_outline),
+                                    label: const Text('Show demo'),
+                                    onPressed: widget.onDemo == null
+                                        ? null
+                                        : () {
+                                            _close();
+                                            widget.onDemo!();
+                                          },
+                                  ),
+                                ),
+                                if (widget.onDemo == null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Text(
+                                      'Correct the values on this screen '
+                                      'first.',
+                                      style: text.bodySmall,
+                                    ),
+                                  ),
+                              ],
                             ],
                           ),
                         ),

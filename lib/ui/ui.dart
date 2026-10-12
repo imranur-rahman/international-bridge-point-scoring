@@ -5,6 +5,8 @@ library;
 export 'src/app.dart';
 export 'src/features/auction_view.dart';
 export 'src/features/deal_screen.dart';
+export 'src/features/demo_dialog.dart';
+export 'src/features/demos.dart';
 export 'src/features/edit_deal_screen.dart';
 export 'src/features/help_button.dart';
 export 'src/features/help_texts.dart';

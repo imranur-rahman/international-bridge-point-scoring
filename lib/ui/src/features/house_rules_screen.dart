@@ -6,6 +6,8 @@ import '../providers.dart';
 import '../widgets.dart';
 import 'help_button.dart';
 import 'help_texts.dart';
+import 'demo_dialog.dart';
+import 'demos.dart';
 import 'sample_calculator.dart';
 
 /// The "House rules" screen, or the read-only "Standard" screen.
@@ -246,6 +248,10 @@ class _HouseRulesScreenState extends ConsumerState<HouseRulesScreen> {
             help: helpTexts[f]!,
             id: f,
             standardDefault: f.standardDefault,
+            hasDemo: true,
+            onDemo: current == null
+                ? null
+                : () => showScoringDemo(context, scoringDemos[f]!, current!),
           ),
         ],
       ),
