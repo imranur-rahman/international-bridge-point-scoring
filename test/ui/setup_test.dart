@@ -19,7 +19,8 @@ void main() {
     testWidgets('no active session', (tester) async {
       await pumpApp(tester);
       expect(find.byKey(const Key('continue')), findsNothing);
-      expect(find.text('IB Score'), findsOneWidget);
+      expect(find.text('IB Scoring'), findsOneWidget);
+      expect(find.text('International Bridge Scoring'), findsOneWidget);
       expect(find.byKey(const Key('new-session')), findsOneWidget);
       expect(find.byKey(const Key('past-sessions')), findsOneWidget);
     });

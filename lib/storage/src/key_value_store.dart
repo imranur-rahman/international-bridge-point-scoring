@@ -6,6 +6,9 @@ abstract interface class KeyValueStore {
   Future<String?> read(String key);
   Future<void> write(String key, String value);
   Future<void> remove(String key);
+
+  /// Removes all keys of this app.
+  Future<void> clear();
 }
 
 /// A [KeyValueStore] in memory, for tests.
@@ -20,6 +23,9 @@ class MemoryKeyValueStore implements KeyValueStore {
 
   @override
   Future<void> remove(String key) async => data.remove(key);
+
+  @override
+  Future<void> clear() async => data.clear();
 }
 
 /// A [KeyValueStore] on `shared_preferences`: `localStorage` on web,
@@ -41,5 +47,11 @@ class SharedPreferencesStore implements KeyValueStore {
   @override
   Future<void> remove(String key) async {
     await (await _prefs).remove(key);
+  }
+
+  /// `shared_preferences` removes only the keys of this app.
+  @override
+  Future<void> clear() async {
+    await (await _prefs).clear();
   }
 }

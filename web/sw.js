@@ -1,4 +1,4 @@
-// IB Score service worker (design decision D1 of add-offline-icon-quick-entry).
+// IB Scoring service worker (design decision D1 of add-offline-icon-quick-entry).
 //
 // - Answers requests for the app's files and for Google fonts from the cache
 //   of this version first, then from the network.

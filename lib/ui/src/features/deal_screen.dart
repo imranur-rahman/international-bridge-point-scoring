@@ -7,9 +7,11 @@ import '../../../core/core.dart';
 import '../../../scoring/scoring.dart';
 import '../../../session/session.dart';
 import '../providers.dart';
+import '../theme.dart';
 import '../widgets.dart';
 import 'auction_view.dart';
 import 'quick_entry_view.dart';
+import 'score_strip.dart';
 import 'score_sheet.dart';
 
 /// The width from which the deal and the score sheet show side by side.
@@ -69,7 +71,7 @@ class DealScreen extends ConsumerWidget {
                     ),
                   ],
                 )
-              : const _DealPane(),
+              : const _DealPane(showStrip: true),
         );
       },
     );
@@ -215,7 +217,10 @@ class SessionSettingsDialog extends StatelessWidget {
 }
 
 class _DealPane extends ConsumerWidget {
-  const _DealPane();
+  const _DealPane({this.showStrip = false});
+
+  /// Shows the score strip, for the one-pane layout on narrow screens.
+  final bool showStrip;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -236,6 +241,7 @@ class _DealPane extends ConsumerWidget {
     }
     return ScrollPage(
       children: [
+        if (showStrip) ...[const ScoreStrip(), const SizedBox(height: 12)],
         StageBar(
           stage: draft.stage,
           biddingStep: session.settings.biddingStep,
@@ -659,8 +665,7 @@ class _ResultViewState extends ConsumerState<_ResultView> {
         Text(
           result?.fullResult ?? 'Select the result',
           key: const Key('full-result'),
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
+          style: valueStyle(context)?.copyWith(
             color: result == null
                 ? null
                 : ResultColors.of(
@@ -1020,12 +1025,45 @@ class _ScoredView extends ConsumerWidget {
             onPressed: () => context.go('/summary'),
             child: const Text('Final summary'),
           )
-        else
-          FilledButton(
-            key: const Key('next-deal'),
-            onPressed: () => sendCommand(context, ref, const NextDeal()),
-            child: const Text('Next deal'),
+        else ...[
+          Text(
+            'Next deal: ${p.nameOf(session.dealerOf(session.records.length))} '
+            '(${session.dealerOf(session.records.length).label}) deals',
+            key: const Key('next-dealer'),
           ),
+          const SizedBox(height: 8),
+          OverflowBar(
+            alignment: MainAxisAlignment.spaceBetween,
+            overflowAlignment: OverflowBarAlignment.end,
+            spacing: 8,
+            overflowSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                key: const Key('undo-scored-deal'),
+                icon: const Icon(Icons.undo),
+                label: const Text('Undo deal'),
+                onPressed: () async {
+                  final ok = await confirm(
+                    context,
+                    title: 'Undo this deal?',
+                    message:
+                        'The app removes this deal and calculates all totals '
+                        'again. The same dealer starts the deal again.',
+                    action: 'Undo deal',
+                  );
+                  if (ok && context.mounted) {
+                    await sendCommand(context, ref, const UndoLastDeal());
+                  }
+                },
+              ),
+              FilledButton(
+                key: const Key('next-deal'),
+                onPressed: () => sendCommand(context, ref, const NextDeal()),
+                child: const Text('Next deal'),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }

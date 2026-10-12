@@ -9,12 +9,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class Harness {
-  Harness(this.tester, this.sessions, this.presets, this.display);
+  Harness(this.tester, this.store, this.sessions, this.presets, this.display);
 
   final WidgetTester tester;
-  final InMemorySessionRepository sessions;
-  final InMemoryPresetRepository presets;
-  final InMemoryDisplayPreferencesRepository display;
+
+  /// One store for all repositories, as in the app.
+  final MemoryKeyValueStore store;
+  final KeyValueSessionRepository sessions;
+  final KeyValuePresetRepository presets;
+  final KeyValueDisplayPreferencesRepository display;
 
   ProviderContainer get container => ProviderScope.containerOf(
     tester.element(find.byType(BridgeScorekeeperApp)),
@@ -66,6 +69,8 @@ Future<Harness> pumpApp(
   Size size = const Size(400, 900),
   String? location,
   double textScale = 1,
+  InstallPrompt? installPrompt,
+  AppFiles? appFiles,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -73,9 +78,10 @@ Future<Harness> pumpApp(
   addTearDown(tester.view.reset);
   addTearDown(tester.platformDispatcher.clearAllTestValues);
 
-  final sessions = InMemorySessionRepository();
-  final presets = InMemoryPresetRepository();
-  final displayRepo = InMemoryDisplayPreferencesRepository();
+  final store = MemoryKeyValueStore();
+  final sessions = KeyValueSessionRepository(store);
+  final presets = KeyValuePresetRepository(store);
+  final displayRepo = KeyValueDisplayPreferencesRepository(store);
   if (active != null) await sessions.saveActive(active);
   if (house != null) await presets.saveHouseRules(house);
   await presets.saveLastPreset(lastPreset);
@@ -87,17 +93,24 @@ Future<Harness> pumpApp(
   );
   await tester.pumpWidget(
     ProviderScope(
-      overrides: appOverrides(
-        sessions: sessions,
-        presets: presets,
-        display: displayRepo,
-        bootstrap: bootstrap,
-      ),
+      overrides:
+          appOverrides(
+            sessions: sessions,
+            presets: presets,
+            display: displayRepo,
+            localData: KeyValueLocalDataRepository(store),
+            bootstrap: bootstrap,
+          ) +
+          [
+            if (installPrompt != null)
+              installPromptProvider.overrideWithValue(installPrompt),
+            if (appFiles != null) appFilesProvider.overrideWithValue(appFiles),
+          ],
       child: const BridgeScorekeeperApp(),
     ),
   );
   await tester.pumpAndSettle();
-  final h = Harness(tester, sessions, presets, displayRepo);
+  final h = Harness(tester, store, sessions, presets, displayRepo);
   if (location != null) await h.go(location);
   return h;
 }

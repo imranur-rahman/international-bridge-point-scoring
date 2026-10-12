@@ -22,6 +22,7 @@ void main() {
           sessions: sessions,
           presets: presets,
           display: display,
+          localData: KeyValueLocalDataRepository(MemoryKeyValueStore()),
           bootstrap: AppBootstrap(
             active: null,
             houseRules: ScoringValues.houseDefaults(),
@@ -61,6 +62,7 @@ void main() {
           sessions: sessions,
           presets: InMemoryPresetRepository(),
           display: InMemoryDisplayPreferencesRepository(),
+          localData: KeyValueLocalDataRepository(MemoryKeyValueStore()),
           bootstrap: AppBootstrap(
             active: null,
             houseRules: ScoringValues.houseDefaults(),

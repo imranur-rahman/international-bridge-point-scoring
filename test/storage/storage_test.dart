@@ -193,4 +193,34 @@ void main() {
       600,
     );
   });
+
+  test('delete all data', () async {
+    final store = MemoryKeyValueStore();
+    final sessions = KeyValueSessionRepository(store);
+    final presets = KeyValuePresetRepository(store);
+    final display = KeyValueDisplayPreferencesRepository(store);
+    await sessions.saveActive(sampleSession('a'));
+    await sessions.archive(sampleSession('b'));
+    await presets.saveHouseRules(
+      ScoringValues.houseDefaults().withValue(ScoringField.gameThreshold, 120),
+    );
+    await presets.saveLastPreset(ScoringPreset.houseRules);
+    await display.save(
+      const DisplayPreferences(themeMode: ThemeModeSetting.dark),
+    );
+    await KeyValueLocalDataRepository(store).deleteAll();
+    expect(await sessions.loadActive(), isNull);
+    expect(await sessions.listPast(), isEmpty);
+    expect(await presets.loadHouseRules(), ScoringValues.houseDefaults());
+    expect(await presets.loadLastPreset(), ScoringPreset.standard);
+    expect(await display.load(), const DisplayPreferences());
+  });
+
+  test('shared_preferences clear removes the app data', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = SharedPreferencesStore();
+    await store.write('session.active', 'x');
+    await KeyValueLocalDataRepository(store).deleteAll();
+    expect(await store.read('session.active'), isNull);
+  });
 }

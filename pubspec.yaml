@@ -28,3 +28,11 @@ flutter:
     - family: SuitSymbols
       fonts:
         - asset: assets/fonts/NotoSansSymbols2-Regular.ttf
+    # Montserrat (SIL Open Font License, see assets/fonts/OFL-Montserrat.txt)
+    # for headings. Static Latin subsets made by tool/subset_font.py.
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Montserrat-Bold.ttf
+          weight: 700
